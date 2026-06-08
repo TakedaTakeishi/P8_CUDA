@@ -1,0 +1,210 @@
+﻿% ==========================================
+% CAPÍTULO DE EJEMPLO
+% ==========================================
+% Este capítulo muestra los patrones más comunes de LaTeX.
+% Úsalo como referencia y elimínalo cuando ya no lo necesites.
+%
+% TIP: Cada capítulo es un archivo independiente en capitulos/
+%      y se incluye desde main.tex con \input{capitulos/nombre}
+%
+% TIP: Nunca pongas \begin{document} ni \end{document} aquí.
+%      Eso sólo va en main.tex.
+% ==========================================
+
+\chapter{Capítulo de ejemplo}
+\label{cap:ejemplo}
+
+% TIP: \label{} te permite referenciar este capítulo desde cualquier parte:
+%      "Como se menciona en el Capítulo \ref{cap:ejemplo}..."
+
+\section{Texto básico}
+
+Este es un párrafo normal. En \LaTeX{}, los párrafos se separan con una línea en blanco.
+No uses \texttt{\textbackslash\textbackslash} para saltos de línea en texto normal,
+eso es sólo para tablas y ecuaciones.
+
+% TIP: Para texto en negritas usa \textbf{}, para itálicas \textit{},
+%      para código en línea \texttt{} o el comando \codigo{} definido en la plantilla.
+
+Este texto tiene \textbf{negritas}, \textit{itálicas} y \codigo{código en línea}.
+También puedes usar las \comillas{comillas tipográficas} definidas en la plantilla.
+
+
+\section{Figuras}
+\label{sec:figuras}
+
+% TIP: Coloca tus imágenes en la carpeta imagenes/
+%      LaTeX las encuentra automáticamente gracias a \graphicspath en proyecto.tex
+%
+% TIP: Usa [H] (requiere paquete float) para forzar la posición exacta.
+%      Usa [htbp] para dejar que LaTeX elija la mejor posición.
+%      Preferir [htbp] produce documentos mejor maquetados.
+%
+% TIP: SIEMPRE pon \label DESPUÉS de \caption, nunca antes.
+%      De lo contrario, las referencias cruzadas apuntarán al lugar incorrecto.
+%
+% TIP: No dejes líneas en blanco entre \caption y \label.
+
+% --- Ejemplo de figura simple ---
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.7\textwidth]{nombre_imagen.png}
+%     \caption{Descripción clara de la imagen}
+%     \label{fig:mi_figura}
+% \end{figure}
+
+% Para referenciar: "Como se muestra en la Figura \ref{fig:mi_figura}..."
+
+
+\section{Tablas}
+\label{sec:tablas}
+
+% TIP: Usa booktabs (\toprule, \midrule, \bottomrule) en lugar de \hline.
+%      Se ve mucho más profesional.
+%
+% TIP: No uses líneas verticales (|) en tablas académicas.
+%
+% TIP: Para tablas largas que cruzan páginas, usa longtable.
+%      Para tablas cortas, usa table + tabular.
+
+% --- Ejemplo de tabla corta ---
+\begin{table}[htbp]
+\centering
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Elemento} & \textbf{Categoría} & \textbf{Valor} \\ \midrule
+Primer elemento    & Tipo A             & 100             \\
+Segundo elemento   & Tipo B             & 200             \\
+Tercer elemento    & Tipo A             & 150             \\ \midrule
+\textbf{Total}     &                    & \textbf{450}    \\ \bottomrule
+\end{tabular}
+\caption{Ejemplo de tabla con booktabs. Fuente: Elaboración propia.}
+\label{tab:ejemplo}
+\end{table}
+
+% --- Ejemplo de tabla larga (multi-página) ---
+% \begin{longtable}{@{}p{2cm}p{8cm}p{3cm}@{}}
+% \toprule
+% \textbf{ID} & \textbf{Descripción} & \textbf{Estado} \\ \midrule
+% \endhead  % <-- Esto repite el encabezado en cada página
+% Fila 1 & Descripción de la fila 1 & Activo \\
+% Fila 2 & Descripción de la fila 2 & Inactivo \\ \bottomrule
+% \caption{Ejemplo de tabla larga. Fuente: Elaboración propia.}
+% \label{tab:ejemplo_largo}
+% \end{longtable}
+
+
+\section{Ecuaciones}
+\label{sec:ecuaciones}
+
+% TIP: Ecuación en línea: $E = mc^2$
+% TIP: Ecuación centrada sin número: \[ E = mc^2 \]
+% TIP: Ecuación centrada con número (referenciable): usar equation
+
+La famosa ecuación de Einstein es $E = mc^2$.
+
+% --- Ejemplo de ecuación numerada ---
+\begin{equation}
+    \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+    \label{eq:suma_gauss}
+\end{equation}
+
+La Ecuación \ref{eq:suma_gauss} muestra la suma de Gauss.
+
+
+\section{Listas}
+\label{sec:listas}
+
+% TIP: itemize = viñetas, enumerate = numerada, description = con título
+
+% --- Lista con viñetas ---
+\begin{itemize}
+    \item Primer punto
+    \item Segundo punto
+    \item Tercer punto con sublista:
+    \begin{itemize}
+        \item Subpunto A
+        \item Subpunto B
+    \end{itemize}
+\end{itemize}
+
+% --- Lista numerada ---
+\begin{enumerate}
+    \item Primer paso
+    \item Segundo paso
+    \item Tercer paso
+\end{enumerate}
+
+
+\section{Código fuente}
+\label{sec:codigo}
+
+% TIP: Usa lstlisting para bloques de código.
+%      El estilo 'mystyle' ya está configurado en configuracion.tex.
+%
+% TIP: Para lenguajes soportados, usa language=Python, language=Java, etc.
+%      Esto activa el resaltado de sintaxis automático.
+%
+% TIP: Si necesitas resaltado más avanzado, activa minted en configuracion.tex
+%      (requiere Python + Pygments instalado).
+
+\begin{lstlisting}[language=Python, caption={Ejemplo de código Python}, label={lst:ejemplo_python}]
+def fibonacci(n):
+    """Calcula el n-esimo numero de Fibonacci."""
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+# Ejemplo de uso
+for i in range(10):
+    print(f"F({i}) = {fibonacci(i)}")
+\end{lstlisting}
+
+El Listado \ref{lst:ejemplo_python} muestra un ejemplo de código con resaltado de sintaxis. 
+
+
+\section{Citas bibliográficas}
+\label{sec:citas}
+
+% TIP: Las referencias se definen en referencias.bib
+%      y se citan con \cite{clave} o \textcite{clave}.
+%
+% TIP: Ejemplo de entrada en referencias.bib:
+%
+% @book{knuth1997,
+%     author    = {Donald E. Knuth},
+%     title     = {The Art of Computer Programming},
+%     publisher = {Addison-Wesley},
+%     year      = {1997},
+%     volume    = {1}
+% }
+%
+% Luego en el texto: "Según Knuth \cite{knuth1997}..."
+%
+% TIP: Para que las citas aparezcan, descomenta \input{common/bibliografia}
+%      en main.tex y compila con: pdflatex → biber → pdflatex → pdflatex
+
+
+\section{Referencias cruzadas}
+\label{sec:referencias}
+
+% TIP: Puedes referenciar cualquier elemento con \label y \ref:
+%      Capítulos: Capítulo \ref{cap:ejemplo}
+%      Secciones: Sección \ref{sec:figuras}
+%      Figuras:   Figura \ref{fig:mi_figura}
+%      Tablas:    Tabla \ref{tab:ejemplo}
+%      Ecuaciones: Ecuación \ref{eq:suma_gauss}
+%      Código:    Listado \ref{lst:ejemplo_python}
+%
+% TIP: Las referencias se actualizan al compilar DOS veces.
+%      Si ves "??" en lugar de números, compila de nuevo.
+
+Este capítulo (Capítulo \ref{cap:ejemplo}) contiene ejemplos de:
+tablas (Tabla~\ref{tab:ejemplo}),
+ecuaciones (Ecuación~\ref{eq:suma_gauss})
+y código (Listado~\ref{lst:ejemplo_python}).
+
+% TIP: Usa ~ (tilde) entre "Figura" y \ref para evitar que
+%      se separen en líneas diferentes. Ej: Figura~\ref{fig:x}
+
+

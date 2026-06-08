@@ -1,0 +1,72 @@
+﻿% ==========================================
+% PLANTILLA LATEX — DOCUMENTOS ACADÉMICOS
+% ==========================================
+%
+% CÓMO USAR ESTA PLANTILLA:
+%   1. Edita  config/proyecto.tex   con los datos de tu proyecto
+%   2. Crea tus capítulos en  capitulos/
+%   3. Descomenta los \input que necesites abajo
+%   4. Compila:  latexmk -pdf -outdir=build main.tex
+%
+% ESTRUCTURA DE CARPETAS:
+%   config/       → Configuración (editar sólo proyecto.tex)
+%   common/       → Archivos estáticos de la plantilla (no tocar a menos que sepas lo que haces)
+%   capitulos/    → Tus capítulos (tu contenido va aquí)
+%   imagenes/     → Imágenes (logos en imagenes/logos/)
+%   build/        → Salida de compilación (se genera solo)
+%
+% TIP: Si algo no compila, limpia build/ y reintenta:
+%      latexmk -C -outdir=build ; latexmk -pdf -outdir=build main.tex
+%
+% ==========================================
+
+\documentclass[11pt, letterpaper]{report}
+
+% --- Datos del proyecto (EDITAR ESTE ARCHIVO) ---
+\input{config/proyecto}
+
+% --- Paquetes y estilos (no tocar a menos que sepas lo que haces) ---
+\input{config/configuracion}
+
+% ==========================================
+\begin{document}
+% ==========================================
+
+% --- Portada ---
+\pagenumbering{gobble}
+\input{common/portada}
+
+% --- Resumen ---
+\input{capitulos/0_resumen.tex}
+
+% --- Índices ---
+\input{common/indices}
+
+% --- Contenido principal ---
+\pagenumbering{arabic}
+
+% TIP: Descomenta y agrega los capítulos que necesites.
+%      Cada archivo debe estar en la carpeta capitulos/
+%      No es necesario poner la extensión .tex
+
+\input{capitulos/1_introduccion.tex}
+\input{capitulos/2_marco_teorico.tex}
+\input{capitulos/3_desarrollo.tex}
+\input{capitulos/4_conclusiones.tex}
+
+% Capítulo de ejemplo (eliminar cuando ya no lo necesites)
+%\input{capitulos/ejemplo}
+
+% --- Bibliografía ---
+% TIP: Descomenta cuando tengas referencias en referencias.bib
+\nocite{*}
+\input{common/bibliografia}
+
+% --- Anexos ---
+% TIP: Descomenta si necesitas apéndices al final
+\input{common/anexos}
+
+% ==========================================
+\end{document}
+% ==========================================
+

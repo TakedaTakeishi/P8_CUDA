@@ -1,0 +1,28 @@
+# Archivos de compilación LaTeX
+/build/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.pdf
+*.html
+/.vscode/
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Archivos de información
+Cambios/
+
+# Archivo Resultante
+*.pdf

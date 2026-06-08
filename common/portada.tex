@@ -1,0 +1,99 @@
+﻿% ==========================================
+% PORTADA — ARCHIVO ESTÁTICO
+% ==========================================
+% NO EDITAR este archivo directamente.
+% Personaliza los datos en: config/proyecto.tex
+%
+% Variables utilizadas (definidas en proyecto.tex):
+%   \institucion, \escuela, \siglasEscuela, \carrera,
+%   \titulo, \subtitulo, \materia, \listaAutores,
+%   \grupo, \profesor, \fechaEntrega, \lugar,
+%   \logoIzquierdo, \logoDerecho
+% ==========================================
+
+\begin{titlepage}
+    \newgeometry{left=2cm, right=2cm, top=2.5cm, bottom=2.5cm}
+    \centering
+
+    % --- Encabezado con logos e institución ---
+    \begin{minipage}{0.18\textwidth}
+        \centering
+        % TIP: Si no quieres logo izquierdo, deja \logoIzquierdo{} vacío en proyecto.tex
+        \ifx\logoIzquierdo\empty\else
+            \includegraphics[width=0.7\textwidth]{\logoIzquierdo}
+        \fi
+    \end{minipage}%
+    \begin{minipage}{0.64\textwidth}
+        \centering
+        % TIP: Cambia el tamaño de la institución modificando 24pt (tamaño) y 28pt (interlineado)
+        {\fontsize{21pt}{28pt}\selectfont\bfseries \institucion}\\[0.4cm]
+        % TIP: Cambia el tamaño de la escuela modificando 20pt (tamaño) y 24pt (interlineado)
+        {\fontsize{19pt}{24pt}\selectfont\bfseries \escuela}\\[0.3cm]
+        % TIP: Cambia el tamaño de las siglas modificando 18pt (tamaño) y 22pt (interlineado)
+        {\fontsize{17pt}{22pt}\selectfont \siglasEscuela}
+    \end{minipage}%
+    \begin{minipage}{0.18\textwidth}
+        \centering
+        \ifx\logoDerecho\empty\else
+            \includegraphics[width=\textwidth]{\logoDerecho}
+        \fi
+    \end{minipage}
+
+    \vspace{1.5cm}
+
+    % --- Carrera ---
+    % TIP: Cambia \Large por: \small, \large, \Large, \LARGE, \huge, \Huge
+    %      O usa \fontsize{Xpt}{Ypt}\selectfont para tamaño específico
+    {\LARGE \carrera}\\[1cm]
+
+    % --- Materia ---
+    % TIP: Cambia \Large por: \small, \large, \Large, \LARGE, \huge, \Huge
+    {\Large \materia}\\[1.5cm]
+
+    % --- Elemento decorativo (ícono/separador) ---
+    % TIP: Puedes agregar un ícono aquí o dejarlo como está
+    % TIP: Cambia 3cm para el ancho de la línea, 2pt para el grosor
+    \rule{3cm}{2pt}\\[1cm]
+
+    % --- Título del trabajo ---
+    % TIP: Cambia el tamaño del título modificando 28pt (tamaño) y 34pt (interlineado)
+    {\fontsize{28pt}{34pt}\selectfont\itshape \titulo}\\[0.5cm]
+
+    % --- Subtítulo (si existe) ---
+    \ifx\subtitulo\empty\else
+        % TIP: Cambia \Large por otro tamaño si necesitas
+        {\Large\itshape \subtitulo}\\[0.5cm]
+    \fi
+
+    \vspace{1.5cm}
+
+    % --- Integrantes ---
+    % TIP: Cambia \Large para el encabezado "INTEGRANTES"
+    {\Large\textbf{INTEGRANTES}}\\[0.8cm]
+    \begin{center}
+        % TIP: Cambia \large para el tamaño de los nombres de los integrantes
+        \large
+        \begin{tabular}{c}
+            \listaAutores
+        \end{tabular}
+    \end{center}
+
+    % --- Profesor (si existe) ---
+    \ifx\profesor\empty\else
+        \vspace{1cm}
+        % TIP: Cambia \Large para el tamaño del profesor
+        {\Large\textbf{Profesor:} \profesor}\\[0.5cm]
+    \fi
+
+    \vspace{\fill}
+
+    % --- Grupo ---
+    {\large\textbf{Grupo:} \grupo}\\[0.5cm]
+
+    % --- Lugar y fecha ---
+    % TIP: Cambia \large para el tamaño del lugar y fecha
+    {\large \lugar\ a \fechaEntrega}
+
+    \restoregeometry
+\end{titlepage}
+
