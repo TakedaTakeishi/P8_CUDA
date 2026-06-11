@@ -7,6 +7,10 @@
 
 \chapter{Marco teórico}
 
+En el presente capítulo se abordan los fundamentos teóricos necesarios para comprender el desarrollo de aplicaciones de cómputo paralelo mediante CUDA. Debido a que las prácticas anteriores ya permitieron estudiar los conceptos generales relacionados con el cómputo paralelo, en esta ocasión el enfoque se centra en la arquitectura desarrollada por NVIDIA para el aprovechamiento de unidades de procesamiento gráfico como aceleradores de cálculo. Esta tecnología ha adquirido una gran relevancia en áreas como la computación científica, el procesamiento de imágenes, la inteligencia artificial y el análisis de grandes volúmenes de datos, debido a su capacidad para ejecutar de manera simultánea una gran cantidad de operaciones sobre diferentes conjuntos de información.
+
+Para comprender el funcionamiento de CUDA y su aplicación en el desarrollo de programas paralelos, resulta necesario conocer diversos aspectos relacionados con la organización interna de las GPU y el modelo de programación utilizado por esta plataforma. Por ello, a lo largo de este capítulo se describen conceptos como la arquitectura de las GPU, la interacción entre host y device, la organización jerárquica de hilos, bloques y grillas, la jerarquía de memoria disponible en el dispositivo, los diferentes tipos de funciones utilizadas en CUDA, así como el proceso de compilación y las propiedades del hardware que influyen en el rendimiento de las aplicaciones. El estudio de estos temas proporciona las bases necesarias para comprender las actividades desarrolladas durante la práctica y los resultados obtenidos mediante la ejecución de programas paralelos sobre GPU.
+
 % INSTRUCCIONES GENERALES:
 % - Incluir un parrafo introductorio del capitulo antes de la primera seccion.
 % - Redactar en prosa (evitar formato de glosario y vietas).
@@ -14,29 +18,342 @@
 % - No insertar figuras/tablas antes de texto explicativo.
 % - Meta de estilo: 90% prosa y 10% apoyo visual/tablas.
 
-% RÚBRICA DE EVALUACIÓN:
-% # Marco teórico
+% ==========================================
+% Parte 1 de la investigación.
+% ==========================================
+\section{CUDA (Compute Unified Device Architecture)}
 
-% Aquí se coloca la investigación de los conceptos necesarios y suficientes que se requieren para comprender el desarrollo de la práctica o proyecto.
+El crecimiento de aplicaciones científicas, de ingeniería y de análisis de datos ha incrementado la necesidad de utilizar arquitecturas capaces de procesar grandes volúmenes de información en tiempos reducidos. Aunque los procesadores tradicionales continúan siendo fundamentales para la ejecución de sistemas operativos y programas de propósito general, muchas tareas modernas presentan un alto grado de paralelismo que puede aprovecharse mediante hardware especializado. En este contexto surge CUDA (Compute Unified Device Architecture), una plataforma desarrollada por NVIDIA que permite utilizar la capacidad de procesamiento de las unidades gráficas para resolver problemas de cómputo general mediante programación paralela. Esta tecnología proporciona un conjunto de herramientas, bibliotecas y compiladores que facilitan el desarrollo de aplicaciones aceleradas por GPU utilizando extensiones de los lenguajes C y C++ \cite{nvidiaCUDA,nvidiaToolkit}.
 
-% Atender las siguientes indicaciones que se tomarán en cuenta en la rúbrica de evaluación:
+\subsection{Definición y objetivo de la plataforma CUDA}
 
-% * No habrá tolerancia a las faltas de ortografía
-% * No habrá tolerancia a la práctica del plagio (copy-paste)
-% * Se deben utilizar citas de forma textual o usando paráfrasis
-% * El 90% de lo contenido en esta sección debe estar escrito en prosa, dejando el 10% para tablas, numeraciones, incisos y viñetas
-% * Esta sección puede ocupar las páginas que se necesiten
+CUDA puede definirse como una arquitectura de cómputo paralelo y un modelo de programación diseñado para aprovechar los recursos de procesamiento disponibles en las GPU de NVIDIA. Antes de la aparición de esta tecnología, la utilización de tarjetas gráficas para cálculos científicos requería adaptar los problemas computacionales a interfaces gráficas como OpenGL o DirectX, lo que complicaba considerablemente el desarrollo de software. CUDA eliminó esta limitación al proporcionar una interfaz orientada al cálculo numérico, permitiendo que los desarrolladores trabajen con conceptos más cercanos a la programación tradicional y puedan acceder directamente a los recursos del dispositivo gráfico. Gracias a este enfoque, las GPU dejaron de utilizarse exclusivamente para tareas de renderizado y comenzaron a desempeñar un papel importante en áreas como simulación numérica, inteligencia artificial, minería de datos y procesamiento de imágenes \cite{nvidiaCUDA,investigacionCUDA}.
 
-% Si se van a ocupar imágenes se deben mencionar en el texto, por ejemplo, en la figura 1 podemos ver la ejecución de un programa en Lenguaje C.
-        
+El propósito principal de CUDA consiste en proporcionar un entorno que permita distribuir una gran cantidad de operaciones entre miles de unidades de procesamiento disponibles en una GPU moderna. A diferencia de una CPU convencional, cuya arquitectura está optimizada para minimizar la latencia de ejecución de un número reducido de hilos, una GPU está diseñada para maximizar el rendimiento global mediante la ejecución simultánea de grandes cantidades de operaciones matemáticas. La plataforma CUDA abstrae gran parte de la complejidad asociada al hardware y ofrece mecanismos que facilitan la escalabilidad del software entre distintas generaciones de dispositivos, permitiendo que una misma aplicación pueda ejecutarse en tarjetas gráficas con diferentes capacidades de procesamiento sin modificaciones significativas en el código fuente \cite{nvidiaProgrammingGuide,investigacionCUDA}.
 
-% CHECKLIST RAPIDO:
-% - Cada seccion debe tener al menos 2 parrafos completos.
-% - Evitar copiar texto literal sin cita.
-% - Cerrar el capitulo con un parrafo de transicion hacia desarrollo.
+\subsection{Ventajas del uso de GPU para cómputo paralelo}
+
+La utilización de GPU como aceleradores de cómputo ofrece diversas ventajas frente a los esquemas tradicionales basados únicamente en CPU. Una de las más importantes es la disponibilidad de miles de núcleos de procesamiento capaces de ejecutar instrucciones sobre diferentes conjuntos de datos de manera simultánea. Adicionalmente, las GPU cuentan con sistemas de memoria diseñados para proporcionar un ancho de banda considerablemente superior al disponible en la mayoría de las computadoras convencionales. Estas características permiten acelerar algoritmos que realizan operaciones repetitivas sobre grandes volúmenes de información, como multiplicación de matrices, simulaciones físicas, entrenamiento de redes neuronales o procesamiento de señales \cite{nvidiaCUDA,awsGPUCPU}.
+
+Antes de profundizar en la arquitectura interna de las GPU, resulta conveniente comparar algunas características generales entre el enfoque de cómputo basado en CPU y el enfoque basado en GPU mediante CUDA. Las diferencias principales se muestran en la Tabla \ref{tab:cpu_gpu_comparacion}, donde puede observarse que ambos tipos de procesadores están orientados a resolver problemas diferentes. Mientras que la CPU resulta adecuada para tareas que requieren control complejo y numerosas bifurcaciones lógicas, la GPU ofrece ventajas significativas cuando una misma operación debe ejecutarse sobre miles o millones de elementos independientes. Esta diferencia de diseño explica por qué CUDA se ha convertido en una herramienta ampliamente utilizada dentro de disciplinas relacionadas con el cómputo de alto rendimiento y la inteligencia artificial \cite{awsGPUCPU,nvidiaProgrammingGuide}.
+
+\begin{table}[H]
+\centering
+\caption{Comparación general entre CPU y GPU para cómputo paralelo. Fuente: Elaboración propia con base en \cite{awsGPUCPU,nvidiaProgrammingGuide}.}
+\label{tab:cpu_gpu_comparacion}
+\begin{tabular}{|p{4cm}|p{5cm}|p{5cm}|}
+\hline
+\textbf{Característica} & \textbf{CPU} & \textbf{GPU con CUDA} \\
+\hline
+Objetivo principal & Minimizar la latencia de ejecución & Maximizar el rendimiento global \\
+\hline
+Cantidad de núcleos & Reducida & Muy elevada \\
+\hline
+Capacidad de paralelismo & Moderada & Masiva \\
+\hline
+Ancho de banda de memoria & Medio & Alto \\
+\hline
+Tipo de aplicaciones & Control, lógica y sistemas generales & Procesamiento matemático intensivo \\
+\hline
+Escalabilidad & Limitada al número de núcleos físicos & Adaptable a diferentes generaciones de GPU \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Arquitectura de una GPU}
+
+La arquitectura interna de una GPU difiere considerablemente de la utilizada en los procesadores convencionales. Aunque ambos dispositivos son capaces de ejecutar instrucciones de propósito general, las decisiones de diseño implementadas en cada uno persiguen objetivos distintos. Las CPU modernas dedican una gran parte de sus recursos a mecanismos de control, predicción de saltos y memorias caché de gran tamaño con la finalidad de reducir la latencia de ejecución. Por el contrario, las GPU destinan la mayor parte de sus recursos físicos al procesamiento aritmético, permitiendo que una gran cantidad de operaciones sean ejecutadas de forma concurrente. Esta característica constituye la base del modelo de programación utilizado por CUDA \cite{awsGPUCPU,nvidiaProgrammingGuide}.
+
+\subsection{Diferencias entre CPU y GPU}
+
+Una diferencia fundamental entre ambos dispositivos se encuentra en la distribución de los transistores disponibles dentro del circuito integrado. En una CPU, una proporción considerable del hardware está dedicada a mecanismos que permiten optimizar la ejecución secuencial de instrucciones, incluyendo memorias caché multinivel, predictores de bifurcación y unidades de control avanzadas. Por el contrario, las GPU reducen la complejidad de estas estructuras y utilizan el espacio liberado para incorporar una mayor cantidad de unidades aritméticas. Como resultado, una GPU puede mantener activos miles de hilos de ejecución simultáneamente, ocultando los tiempos de espera asociados al acceso a memoria mediante cambios rápidos de contexto entre grupos de hilos.
+
+La diferencia entre ambas arquitecturas puede apreciarse de forma general en la Tabla \ref{tab:diferencias_cpu_gpu}, donde se resumen algunos de los aspectos más relevantes relacionados con el procesamiento paralelo. Como puede observarse, las GPU sacrifican parte de la complejidad asociada al control de ejecución para incrementar significativamente la capacidad de procesamiento paralelo. Esta decisión permite obtener un mejor aprovechamiento de los recursos cuando se trabaja con problemas que pueden dividirse en una gran cantidad de operaciones independientes \cite{awsGPUCPU,investigacionCUDA}.
+
+\begin{table}[H]
+\centering
+\caption{Principales diferencias entre CPU y GPU. Fuente: Elaboración propia con base en \cite{awsGPUCPU,investigacionCUDA}.}
+\label{tab:diferencias_cpu_gpu}
+\begin{tabular}{|p{4cm}|p{5cm}|p{5cm}|}
+\hline
+\textbf{Aspecto} & \textbf{CPU} & \textbf{GPU} \\
+\hline
+Número de hilos concurrentes & Decenas & Miles o decenas de miles \\
+\hline
+Gestión de latencia & Cachés y lógica de control avanzada & Cambio rápido entre hilos activos \\
+\hline
+Unidades de control & Complejas & Simplificadas \\
+\hline
+Cantidad de unidades aritméticas & Reducida & Muy elevada \\
+\hline
+Orientación de diseño & Baja latencia & Alto rendimiento global \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Arquitectura interna de las GPU}
+
+Los CUDA Cores constituyen las unidades básicas de procesamiento dentro de una GPU NVIDIA. Estos elementos son responsables de ejecutar operaciones aritméticas y lógicas sobre los datos asignados a cada hilo de ejecución. A diferencia de un núcleo completo de CPU, un CUDA Core no posee mecanismos avanzados de control ni capacidad para administrar procesos del sistema operativo. Su función principal consiste en realizar cálculos matemáticos de manera eficiente, permitiendo que miles de operaciones puedan ejecutarse simultáneamente sobre diferentes conjuntos de datos. En las arquitecturas modernas, estos núcleos trabajan junto con otros componentes especializados, como las unidades de funciones especiales y los Tensor Cores, para incrementar aún más el rendimiento en aplicaciones científicas y de inteligencia artificial.
+
+Aunque los CUDA Cores son las unidades responsables de realizar las operaciones matemáticas, la organización principal del hardware se encuentra en los denominados Streaming Multiprocessors (SM). Cada SM integra un conjunto de recursos de procesamiento que incluye CUDA Cores, registros, memoria compartida, unidades de planificación y diversos mecanismos de control. Cuando un programa CUDA se ejecuta, los bloques de hilos son distribuidos entre los distintos SM disponibles en la GPU, permitiendo que múltiples tareas se desarrollen de forma paralela. Esta estructura jerárquica facilita la administración eficiente de los recursos y constituye uno de los elementos fundamentales para alcanzar altos niveles de rendimiento computacional \cite{introduccionCUDA,investigacionCUDA}.
+
+El funcionamiento de las GPU modernas se basa en un modelo conocido como Single Instruction Multiple Threads (SIMT), mediante el cual un mismo conjunto de instrucciones puede ejecutarse simultáneamente sobre múltiples hilos. Dentro de cada Streaming Multiprocessor, los hilos se agrupan en conjuntos denominados warps, normalmente formados por treinta y dos hilos. Cada warp ejecuta una misma instrucción sobre datos diferentes, lo que permite aprovechar de manera eficiente las unidades aritméticas disponibles. Sin embargo, cuando algunos hilos siguen rutas de ejecución distintas debido a estructuras condicionales, el hardware debe serializar parcialmente la ejecución, reduciendo el rendimiento obtenido. Por esta razón, el diseño de algoritmos para CUDA suele buscar minimizar la divergencia entre los hilos pertenecientes a un mismo warp \cite{nvidiaProgrammingGuide,investigacionCUDA}.
 
 
+% ==========================================
+% Parte 2 de la investigación.
+% ==========================================
+\section{Modelo de programación CUDA}
+
+La programación en CUDA se fundamenta en un modelo heterogéneo en el que participan dos tipos de procesadores con funciones complementarias. Por una parte, la CPU actúa como anfitrión del programa y se encarga de las tareas de control, administración de memoria y coordinación general de la aplicación. Por otra parte, la GPU funciona como dispositivo acelerador y ejecuta las secciones del código que presentan un alto grado de paralelismo. Este enfoque permite distribuir las responsabilidades de procesamiento entre ambos componentes, aprovechando las fortalezas de cada arquitectura y reduciendo significativamente el tiempo requerido para resolver problemas computacionalmente intensivos \cite{nvidiaProgrammingGuide,investigacionCUDA}.
+
+A diferencia de los programas tradicionales escritos únicamente para CPU, las aplicaciones desarrolladas con CUDA requieren que el programador determine qué partes del algoritmo serán ejecutadas en el host y cuáles serán enviadas al dispositivo gráfico. Esta separación constituye uno de los aspectos más importantes del modelo de programación, ya que influye directamente en el rendimiento obtenido y en el aprovechamiento de los recursos disponibles en el hardware \cite{introduccionCUDA,nvidiaCUDA}.
+
+\subsection{Modelo Host y Device}
+
+El modelo Host-Device representa la base conceptual de CUDA. El término Host hace referencia al sistema principal donde se ejecuta la aplicación, normalmente una computadora equipada con una CPU convencional. El término Device corresponde a la GPU encargada de realizar las operaciones paralelas. Ambos componentes poseen espacios de memoria independientes, por lo que resulta necesario transferir información entre ellos cuando se requiere procesar datos en la tarjeta gráfica.
+
+En una aplicación típica, la CPU reserva memoria, inicializa los datos de entrada y posteriormente realiza una transferencia hacia la memoria del dispositivo. Una vez completada la transferencia, la CPU solicita la ejecución de uno o más kernels en la GPU. Cuando los cálculos concluyen, los resultados son copiados nuevamente hacia la memoria principal para su utilización posterior. Este esquema permite aprovechar la capacidad de procesamiento masivo de la GPU sin reemplazar completamente las funciones de control desempeñadas por la CPU.
+
+Antes de analizar los mecanismos de ejecución, resulta conveniente resumir las responsabilidades de cada componente dentro del modelo CUDA. Estas funciones se muestran en la Tabla \ref{tab:host_device}, donde puede observarse que la CPU y la GPU no compiten entre sí, sino que colaboran para resolver un problema de manera eficiente. Mientras el host coordina la ejecución global de la aplicación, el device concentra sus recursos en realizar cálculos paralelos sobre grandes cantidades de datos. Esta distribución de responsabilidades constituye uno de los principios fundamentales del modelo de programación de CUDA \cite{hostdevice,nvidiaProgrammingGuide}.
+
+\begin{table}[H]
+\centering
+\caption{Responsabilidades del Host y el Device en CUDA. Fuente: Elaboración propia con base en \cite{hostdevice,nvidiaProgrammingGuide}.}
+\label{tab:host_device}
+\begin{tabular}{|p{5cm}|p{3cm}|p{3cm}|}
+\hline
+\textbf{Actividad} & \textbf{Host (CPU)} & \textbf{Device (GPU)} \\
+\hline
+Control del programa & Sí & No \\
+\hline
+Gestión de memoria & Sí & Parcial \\
+\hline
+Transferencia de datos & Sí & No \\
+\hline
+Ejecución de kernels & No & Sí \\
+\hline
+Procesamiento paralelo masivo & Limitado & Sí \\
+\hline
+Interacción con el sistema operativo & Sí & No \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Concepto de Kernel}
+
+Un kernel puede definirse como una función especial diseñada para ejecutarse directamente en la GPU. Cuando el host invoca un kernel, el hardware crea una gran cantidad de hilos que ejecutan simultáneamente el mismo conjunto de instrucciones sobre diferentes elementos de datos. Esta característica permite implementar algoritmos paralelos de forma relativamente sencilla, ya que el programador describe el trabajo que debe realizar un hilo individual y CUDA se encarga de replicar dicho comportamiento sobre miles de instancias concurrentes.
+
+Los kernels se diferencian de las funciones tradicionales debido a que utilizan una sintaxis especial para su lanzamiento. Durante la ejecución, cada hilo dispone de información que le permite identificar su posición dentro de la estructura paralela, facilitando el acceso a diferentes posiciones de memoria y permitiendo distribuir el trabajo de forma organizada. Gracias a este mecanismo, problemas de gran tamaño pueden dividirse en numerosas tareas pequeñas que son ejecutadas simultáneamente por la GPU \cite{nvidiaProgrammingGuide,investigacionCUDA}.
+
+\subsection{Flujo básico de ejecución de un programa CUDA}
+
+El ciclo de ejecución de una aplicación CUDA sigue una secuencia claramente definida que inicia en la CPU y culmina con la recuperación de resultados procesados por la GPU. En primer lugar, el programa reserva memoria en el host y genera los datos necesarios para el cálculo. Posteriormente se asigna memoria en el dispositivo y se transfieren los datos requeridos hacia la GPU. Una vez completada esta etapa, el host lanza el kernel correspondiente y espera la finalización de la tarea. Finalmente, los resultados obtenidos son copiados nuevamente hacia la memoria principal para continuar con el procesamiento o presentarlos al usuario.
+
+Este procedimiento resulta indispensable debido a que la memoria de la GPU y la memoria principal del sistema se encuentran físicamente separadas. Como puede observarse en la Figura \ref{fig:flujo_cuda}, la ejecución de una aplicación CUDA implica la transferencia de información entre el host y el dispositivo antes y después del procesamiento paralelo realizado por la GPU. Como consecuencia, la eficiencia de una aplicación CUDA no depende únicamente de la velocidad de cálculo del dispositivo, sino también de la cantidad de transferencias realizadas entre ambos espacios de memoria. Una adecuada planificación de estas operaciones permite reducir tiempos de ejecución y mejorar el aprovechamiento del hardware disponible \cite{nvidiaProgrammingGuide,introduccionCUDA}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{imagenes/Frem/flujo_cuda.png}
+\caption{Flujo básico de ejecución de una aplicación CUDA. Fuente: Elaboración propia.}
+\label{fig:flujo_cuda}
+\end{figure}
+
+\section{Organización de hilos en CUDA}
+
+Uno de los elementos más importantes de CUDA es el mecanismo utilizado para organizar los miles de hilos que participan en una ejecución paralela. Debido a que una GPU moderna puede ejecutar simultáneamente una enorme cantidad de tareas, resulta necesario establecer una estructura jerárquica que permita distribuir el trabajo de manera ordenada. CUDA implementa esta organización mediante tres niveles principales denominados Thread, Block y Grid, los cuales facilitan la administración de recursos y simplifican el desarrollo de algoritmos paralelos escalables \cite{threadHierarchy,investigacionCUDA}.
+
+Antes de analizar el mecanismo de indexación de hilos, resulta conveniente estudiar la jerarquía de ejecución utilizada por CUDA para organizar el trabajo dentro de la GPU. Este modelo establece diferentes niveles que permiten distribuir las tareas de manera eficiente entre los recursos de procesamiento disponibles. Cada nivel cumple una función específica dentro de la ejecución paralela, desde la realización de operaciones individuales hasta la administración de grandes conjuntos de trabajo. Gracias a esta organización jerárquica, CUDA puede escalar la ejecución de un mismo kernel sobre grandes cantidades de datos manteniendo una estructura ordenada y flexible. Las características principales de cada nivel se presentan en la Tabla \ref{tab:jerarquia_cuda}.
+
+\begin{table}[H]
+\centering
+\caption{Jerarquía de ejecución en CUDA. Fuente: Elaboración propia con base en \cite{threadHierarchy,nvidiaProgrammingGuide}.}
+\label{tab:jerarquia_cuda}
+\begin{tabular}{|p{3cm}|p{4cm}|p{7cm}|}
+\hline
+\textbf{Nivel} & \textbf{Unidad} & \textbf{Función principal} \\
+\hline
+Thread & Hilo individual & Ejecutar una instancia del kernel. \\
+\hline
+Block & Grupo de hilos & Permitir cooperación y sincronización local. \\
+\hline
+Grid & Conjunto de bloques & Representar la totalidad del trabajo asociado al kernel. \\
+\hline
+\end{tabular}
+\end{table}
+
+La Tabla \ref{tab:jerarquia_cuda} muestra cómo CUDA organiza la ejecución paralela mediante una estructura jerárquica compuesta por threads, blocks y grids. Cada uno de estos niveles cumple una función específica dentro del modelo de programación, permitiendo dividir un problema complejo en múltiples tareas que pueden ejecutarse de manera concurrente. Esta organización facilita la administración de recursos dentro de la GPU y proporciona una forma escalable de distribuir la carga de trabajo. Como resultado, una misma aplicación puede aprovechar desde unos pocos hilos hasta millones de ellos, dependiendo de las dimensiones del problema y de las capacidades del hardware disponible \cite{threadHierarchy,nvidiaProgrammingGuide}.
+
+\subsection{Identificación de hilos}
+
+Para que cada hilo pueda determinar qué parte de los datos debe procesar, CUDA proporciona variables integradas que identifican su posición dentro de la jerarquía de ejecución. Entre las más utilizadas se encuentran \texttt{threadIdx}, \texttt{blockIdx}, \texttt{blockDim} y \texttt{gridDim}, las cuales son generadas automáticamente por el sistema de ejecución. Estas variables permiten conocer la ubicación de cada hilo dentro de su bloque, así como la posición del bloque dentro de la grilla. Gracias a esta información, es posible asignar de manera ordenada las operaciones que realizará cada hilo y establecer una correspondencia directa entre los elementos de los datos y las unidades de procesamiento disponibles. Este mecanismo constituye uno de los aspectos fundamentales del modelo de programación de CUDA, ya que permite distribuir el trabajo de forma eficiente entre miles de hilos concurrentes \cite{threadIndexing,investigacionCUDA}.
+
+En problemas unidimensionales, el índice global de un hilo suele obtenerse mediante la Ecuación \ref{eq:indice_global}, la cual combina la posición del bloque dentro de la grilla con la posición del hilo dentro del bloque para generar un identificador único. Este índice permite asociar cada hilo con una posición específica dentro de un arreglo lineal almacenado en memoria, facilitando el acceso a los datos que deben ser procesados. A partir de este esquema, cada hilo puede ejecutar las mismas instrucciones sobre diferentes elementos sin interferir con los demás, lo que favorece la ejecución paralela de grandes volúmenes de información. Debido a ello, el cálculo del índice global representa uno de los conceptos más utilizados en el desarrollo de algoritmos paralelos mediante CUDA \cite{threadIndexing,threadCheatsheet}.
+
+\begin{equation}
+\label{eq:indice_global}
+idx = blockIdx.x \times blockDim.x + threadIdx.x
+\end{equation}
 
 
+% ==========================================
+% Parte 3 de la investigación.
+% ==========================================
+\section{Jerarquía de memoria en CUDA}
+
+La organización jerárquica de la memoria busca reducir los tiempos de espera ocasionados por el acceso a datos. Mientras que algunas regiones ofrecen una gran capacidad de almacenamiento a costa de una mayor latencia, otras proporcionan accesos extremadamente rápidos pero con recursos más limitados. El aprovechamiento adecuado de esta estructura permite minimizar los retrasos asociados a la transferencia de información y mantener ocupadas las unidades de procesamiento de la GPU durante el mayor tiempo posible. Debido a estas diferencias, resulta conveniente comparar las características de los principales espacios de memoria disponibles en CUDA. La Tabla \ref{tab:memorias_cuda} resume los aspectos más relevantes relacionados con su acceso, velocidad relativa y uso principal \cite{cudaMemoryHierarchy,cornellMemory}.
+
+\begin{table}[H]
+\centering
+\caption{Principales tipos de memoria disponibles en CUDA. Fuente: Elaboración propia con base en \cite{cudaMemoryHierarchy,nvidiaBestPractices,cornellMemory,nvidiaProgrammingGuide}.}
+\label{tab:memorias_cuda}
+\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{6cm}|}
+\hline
+\textbf{Memoria} & \textbf{Acceso} & \textbf{Velocidad relativa} & \textbf{Uso principal} \\
+\hline
+Global & Todos los hilos & Baja & Almacenamiento principal de datos de entrada y salida. \\
+\hline
+Compartida & Hilos del mismo bloque & Alta & Intercambio de información y reutilización de datos dentro de un bloque. \\
+\hline
+Local & Hilo individual & Baja & Almacenamiento temporal cuando los registros resultan insuficientes. \\
+\hline
+Constante & Todos los hilos (solo lectura) & Alta para lecturas compartidas & Almacenamiento de constantes y parámetros que permanecen invariables durante la ejecución. \\
+\hline
+\end{tabular}
+\end{table}
+
+La Tabla \ref{tab:memorias_cuda} permite observar que cada tipo de memoria fue diseñado para atender necesidades específicas dentro del modelo de ejecución de CUDA. Mientras que la memoria global proporciona la mayor capacidad de almacenamiento disponible y puede ser utilizada por todos los hilos, la memoria compartida ofrece accesos considerablemente más rápidos para los hilos pertenecientes a un mismo bloque. Por su parte, la memoria local se emplea principalmente cuando los registros resultan insuficientes para almacenar todas las variables requeridas durante la ejecución, mientras que la memoria constante favorece el acceso eficiente a información que permanece invariable. En conjunto, estos espacios de memoria permiten equilibrar capacidad, velocidad y alcance de acceso, contribuyendo al desarrollo de aplicaciones paralelas con un mejor aprovechamiento de los recursos de la GPU \cite{cudaMemoryHierarchy,nvidiaBestPractices,cornellMemory,nvidiaProgrammingGuide}.
+
+\subsection{Registros}
+
+Los registros representan el nivel más rápido dentro de la jerarquía de memoria de CUDA. Cada hilo dispone de un conjunto privado de registros utilizados para almacenar variables temporales y resultados intermedios durante la ejecución. Debido a que estos recursos se encuentran integrados directamente dentro del multiprocesador, las operaciones de lectura y escritura pueden realizarse prácticamente en un único ciclo de reloj. No obstante, la cantidad de registros disponibles es limitada y debe compartirse entre todos los hilos activos en un multiprocesador. Un uso excesivo de registros puede reducir la cantidad de bloques concurrentes que pueden ejecutarse simultáneamente, afectando la ocupación del dispositivo y disminuyendo el rendimiento global de la aplicación. Antes de continuar con las técnicas de optimización, resulta conveniente resumir las características principales de cada tipo de memoria disponible en CUDA. Estas propiedades se muestran en la Tabla \ref{tab:tipos_memoria_cuda} \cite{cudaMemoryHierarchy,nvidiaProgrammingGuide}.
+
+\begin{table}[H]
+\centering
+\caption{Comparación de los principales tipos de memoria en CUDA. Fuente: Elaboración propia con base en \cite{cudaMemoryHierarchy,cornellMemory,nvidiaBestPractices}.}
+\label{tab:tipos_memoria_cuda}
+\begin{tabular}{|p{2.5cm}|p{3cm}|p{2.5cm}|p{3cm}|p{3cm}|}
+\hline
+\textbf{Memoria} & \textbf{Ubicación} & \textbf{Velocidad} & \textbf{Visibilidad} & \textbf{Capacidad} \\
+\hline
+Registros & Dentro del SM & Muy alta & Hilo individual & Muy limitada \\
+\hline
+Compartida & Dentro del SM & Alta & Bloque & Limitada \\
+\hline
+Constante & DRAM con caché & Media-Alta & Toda la grilla & Reducida \\
+\hline
+Local & DRAM & Baja & Hilo individual & Variable \\
+\hline
+Global & DRAM & Baja & Toda la grilla & Muy alta \\
+\hline
+\end{tabular}
+\end{table}
+
+La Tabla \ref{tab:tipos_memoria_cuda} permite observar que existe una relación inversa entre velocidad y capacidad de almacenamiento. En general, las memorias más rápidas poseen una capacidad menor, mientras que las regiones con mayor capacidad presentan tiempos de acceso más elevados. Comprender esta relación resulta fundamental para diseñar aplicaciones paralelas eficientes y aprovechar adecuadamente los recursos disponibles en la GPU. Asimismo, la comparación permite identificar las diferencias existentes entre los distintos espacios de memoria y la función que desempeñan dentro de la jerarquía de almacenamiento utilizada por CUDA \cite{cudaMemoryHierarchy,nvidiaBestPractices}.
+
+\subsection{Importancia de la jerarquía de memoria en el rendimiento}
+
+La correcta utilización de la jerarquía de memoria constituye uno de los factores más importantes para alcanzar altos niveles de rendimiento en CUDA. Un acceso desordenado a la memoria global puede generar múltiples transacciones innecesarias y aumentar significativamente los tiempos de ejecución. Por el contrario, cuando los datos son organizados adecuadamente y reutilizados mediante memoria compartida o registros, es posible reducir la latencia efectiva y mejorar el aprovechamiento de los recursos computacionales.
+
+Entre las estrategias más utilizadas para optimizar el acceso a memoria destacan la coalescencia de accesos en memoria global y la reducción de conflictos de bancos en memoria compartida. Estas técnicas permiten incrementar el ancho de banda efectivo disponible para los kernels y constituyen prácticas ampliamente recomendadas por NVIDIA para el desarrollo de aplicaciones de alto rendimiento \cite{nvidiaBestPractices,cudaMemoryHierarchy}.
+
+\section{Tipos de funciones en CUDA}
+
+La programación en CUDA requiere mecanismos que permitan distinguir claramente qué partes del código deben ejecutarse en la CPU y cuáles serán ejecutadas en la GPU. Para lograr esta diferenciación, NVIDIA incorporó una serie de calificadores especiales que indican el lugar de ejecución y el origen desde el cual puede invocarse una función determinada. Estos calificadores forman parte esencial del modelo de programación y facilitan la construcción de aplicaciones heterogéneas donde participan simultáneamente el host y el dispositivo gráfico.
+
+\begin{table}[H]
+\centering
+\caption{Comparación de los calificadores de funciones en CUDA. Fuente: Elaboración propia con base en \cite{nvidiaProgrammingGuide,hostdevice}.}
+\label{tab:funciones_cuda}
+\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{7cm}|}
+\hline
+\textbf{Calificador} & \textbf{Lugar de ejecución} & \textbf{Invocación} & \textbf{Características principales} \\
+\hline
+\texttt{\_\_global\_\_} & GPU & Host & Corresponde a los kernels ejecutados en la GPU. Son invocados desde el host mediante la sintaxis de lanzamiento de CUDA y son ejecutados de forma paralela por una gran cantidad de hilos. Deben poseer un tipo de retorno \texttt{void} y su ejecución es asíncrona respecto al host. \\
+\hline
+\texttt{\_\_device\_\_} & GPU & GPU & Están destinadas a ejecutarse exclusivamente dentro de la GPU. Generalmente se utilizan como funciones auxiliares para otros kernels o funciones del dispositivo, permitiendo modularizar el código y dividir cálculos complejos en componentes más pequeños. No pueden ser invocadas directamente desde la CPU. \\
+\hline
+\texttt{\_\_host\_\_} & CPU & CPU & Son ejecutadas únicamente por la CPU. Cualquier función convencional escrita en un archivo CUDA que no posea calificadores específicos es considerada automáticamente una función de host. Se emplean para tareas de control, asignación de memoria, transferencia de datos y coordinación general de la aplicación. \\
+\hline
+\texttt{\_\_host\_\_ \_\_device\_\_} & CPU y GPU & CPU o GPU & Permiten que una misma función pueda ejecutarse tanto en la CPU como en la GPU. El compilador genera versiones independientes para ambos entornos de ejecución, favoreciendo la reutilización de código y reduciendo la duplicación de implementaciones. \\
+\hline
+\end{tabular}
+\end{table}
+
+La Tabla \ref{tab:funciones_cuda} muestra los principales calificadores utilizados en CUDA para definir el entorno de ejecución de una función y la forma en que puede ser invocada dentro de una aplicación. Estos especificadores permiten establecer una separación clara entre las tareas ejecutadas por la CPU y aquellas que son procesadas por la GPU, facilitando la construcción de programas heterogéneos. Asimismo, proporcionan mecanismos para desarrollar kernels paralelos, funciones auxiliares exclusivas del dispositivo y rutinas reutilizables en ambos entornos de ejecución. La correcta selección de cada calificador contribuye a una mejor organización del código, simplifica las labores de mantenimiento y permite aprovechar de manera más eficiente los recursos de procesamiento disponibles en sistemas acelerados mediante CUDA \cite{nvidiaProgrammingGuide,hostdevice}.
 
 
+% ==========================================
+% Parte 4 de la investigación.
+% ==========================================
+\section{Compilación y ejecución de programas CUDA}
+
+El desarrollo de aplicaciones CUDA requiere un proceso de compilación diferente al utilizado en programas tradicionales escritos únicamente para CPU. Debido a que una aplicación CUDA contiene código destinado a ejecutarse tanto en el host como en el dispositivo, es necesario utilizar herramientas capaces de generar instrucciones para ambas arquitecturas de manera simultánea. Para este propósito, NVIDIA proporciona el compilador NVCC (NVIDIA CUDA Compiler), el cual actúa como intermediario entre el código fuente desarrollado por el programador y los compiladores específicos encargados de generar los ejecutables finales. La principal función de NVCC consiste en analizar los archivos fuente, identificar las secciones destinadas a la CPU y las destinadas a la GPU, y posteriormente dirigir cada una hacia el compilador correspondiente. Gracias a este mecanismo, el desarrollador puede trabajar dentro de un mismo proyecto utilizando código secuencial y paralelo sin necesidad de emplear herramientas de compilación independientes. Este enfoque simplifica el desarrollo de aplicaciones heterogéneas y permite aprovechar de forma eficiente los recursos de hardware disponibles en el sistema \cite{nvccGuide,nvidiaProgrammingGuide,investigacionCUDA}.
+
+\subsection{Compilador NVCC y proceso de compilación}
+
+NVCC es el compilador oficial de CUDA y constituye uno de los componentes fundamentales del entorno de desarrollo proporcionado por NVIDIA. Su función principal consiste en coordinar el proceso de traducción del código fuente hacia instrucciones ejecutables tanto para la CPU como para la GPU. Para ello, NVCC analiza los calificadores específicos de CUDA, identifica los kernels y genera los archivos intermedios necesarios para completar el proceso de compilación. A diferencia de un compilador convencional, NVCC no realiza por sí solo toda la generación del código máquina. En su lugar, utiliza compiladores externos compatibles con la plataforma para procesar la parte correspondiente al host, mientras que emplea herramientas especializadas de NVIDIA para generar las instrucciones destinadas al dispositivo gráfico. Esta estrategia permite mantener compatibilidad con distintos sistemas operativos y arquitecturas de hardware.
+
+El proceso de compilación de una aplicación CUDA puede dividirse en varias etapas. Inicialmente, NVCC analiza el código fuente e identifica las regiones correspondientes al host y al dispositivo. Posteriormente, el código destinado a la GPU es traducido a PTX (Parallel Thread Execution), un lenguaje ensamblador virtual diseñado por NVIDIA para representar instrucciones de manera independiente del hardware específico. Una vez generado el código PTX, herramientas internas del compilador producen los archivos binarios optimizados para una arquitectura determinada de GPU. Finalmente, estos componentes se integran junto con el código compilado para CPU dentro de un único ejecutable. Este procedimiento permite que las aplicaciones CUDA aprovechen las capacidades específicas del hardware disponible sin perder portabilidad entre diferentes generaciones de dispositivos \cite{nvccGuide,nvidiaProgrammingGuide}.
+
+\subsection{Archivos utilizados y estrategias de compilación}
+
+El desarrollo de aplicaciones CUDA incorpora extensiones de archivo específicas que permiten diferenciar claramente los distintos componentes del proyecto. Estas extensiones facilitan la organización del código y proporcionan información al compilador acerca de la naturaleza de cada archivo. Los archivos con extensión \texttt{.cu} contienen la implementación principal de los programas CUDA y pueden incluir tanto código para CPU como kernels destinados a la GPU. Por otra parte, los archivos \texttt{.cuh} se utilizan generalmente para almacenar declaraciones, prototipos y estructuras compartidas entre diferentes módulos del proyecto. Durante el proceso de compilación también se generan archivos intermedios que representan distintas etapas de traducción y optimización del código. La Tabla \ref{tab:archivos_cuda} resume las extensiones más comunes utilizadas durante el desarrollo y compilación de programas CUDA \cite{nvccGuide,investigacionCUDA}.
+
+\begin{table}[H]
+\centering
+\caption{Principales archivos utilizados en CUDA. Fuente: Elaboración propia con base en \cite{nvccGuide,nvidiaProgrammingGuide}.}
+\label{tab:archivos_cuda}
+\begin{tabular}{|p{2.5cm}|p{5cm}|p{4cm}|}
+\hline
+\textbf{Extensión} & \textbf{Descripción} & \textbf{Destino principal} \\
+\hline
+\texttt{.cu} & Código fuente CUDA & CPU y GPU \\
+\hline
+\texttt{.cuh} & Cabeceras y declaraciones & CPU y GPU \\
+\hline
+\texttt{.ptx} & Ensamblador virtual CUDA & Capa intermedia \\
+\hline
+\texttt{.cubin} & Binario específico de GPU & GPU \\
+\hline
+Fatbin & Contenedor de código compilado & Entorno de ejecución CUDA \\
+\hline
+\end{tabular}
+\end{table}
+
+La Tabla \ref{tab:archivos_cuda} muestra cómo el proceso de compilación genera diferentes representaciones del programa antes de producir el ejecutable final. Estas etapas permiten optimizar el código para distintas arquitecturas y mantener compatibilidad con futuras generaciones de dispositivos gráficos. Asimismo, CUDA admite distintos mecanismos para generar código ejecutable. Uno de ellos es la compilación offline, donde las instrucciones específicas para una arquitectura determinada son generadas durante el proceso de desarrollo. En este caso, el ejecutable contiene código optimizado para una familia concreta de dispositivos gráficos, reduciendo el tiempo requerido para iniciar la aplicación. Por otra parte, CUDA también permite la compilación Just-In-Time (JIT), mediante la cual el código PTX es traducido dinámicamente por el controlador de la GPU cuando la aplicación es ejecutada. Este enfoque proporciona una mayor compatibilidad con dispositivos futuros, ya que permite generar código optimizado para arquitecturas que no existían al momento de desarrollar el programa original \cite{nvccGuide,nvidiaProgrammingGuide}.
+
+\section{Propiedades de dispositivos CUDA}
+
+Las GPU compatibles con CUDA pueden presentar diferencias importantes en cuanto a capacidad de procesamiento, cantidad de memoria disponible y recursos internos destinados a la ejecución de aplicaciones paralelas. Debido a ello, CUDA incorpora mecanismos que permiten consultar de forma dinámica las características del dispositivo antes de iniciar la ejecución de un programa. Esta información resulta útil para adaptar parámetros como el tamaño de los bloques de hilos, la cantidad de memoria utilizada y la selección de determinadas estrategias de procesamiento. De esta manera, las aplicaciones pueden aprovechar de forma más eficiente los recursos disponibles y garantizar la compatibilidad con diferentes generaciones de hardware.
+
+Entre las características que pueden obtenerse mediante las funciones de consulta de CUDA se encuentran el nombre del dispositivo, la cantidad de memoria global disponible, el tamaño máximo de memoria compartida por bloque, el número de registros disponibles, el tamaño de los warps y la cantidad de multiprocesadores presentes en la GPU. Asimismo, es posible conocer límites relacionados con la configuración de bloques y grillas, información que resulta fundamental para diseñar algoritmos paralelos adecuados a las capacidades del dispositivo. El conocimiento de estas propiedades permite optimizar la ejecución de los kernels y evitar configuraciones que excedan las restricciones físicas impuestas por el hardware.
+
+\begin{table}[H]
+\centering
+\caption{Propiedades relevantes de una GPU CUDA. Fuente: Elaboración propia con base en \cite{deviceProperties,nvidiaDeviceBlog}.}
+\label{tab:propiedades_cuda}
+\begin{tabular}{|p{4cm}|p{3cm}|p{6cm}|}
+\hline
+\textbf{Propiedad} & \textbf{Tipo} & \textbf{Descripción} \\
+\hline
+\texttt{name} & Cadena de texto & Nombre comercial de la GPU. \\
+\hline
+\texttt{totalGlobalMem} & Entero & Memoria global disponible. \\
+\hline
+\texttt{sharedMemPerBlock} & Entero & Memoria compartida por bloque. \\
+\hline
+\texttt{regsPerBlock} & Entero & Registros disponibles por bloque. \\
+\hline
+\texttt{warpSize} & Entero & Tamaño de los warps. \\
+\hline
+\texttt{maxThreadsPerBlock} & Entero & Máximo número de hilos por bloque. \\
+\hline
+\texttt{clockRate} & Entero & Frecuencia de operación de la GPU. \\
+\hline
+\texttt{multiProcessorCount} & Entero & Cantidad de Streaming Multiprocessors. \\
+\hline
+\end{tabular}
+\end{table}
+
+La Tabla \ref{tab:propiedades_cuda} presenta algunas de las propiedades más relevantes que pueden consultarse mediante la API de CUDA. Estos atributos proporcionan información detallada acerca de los recursos físicos disponibles en la GPU y permiten al programador tomar decisiones relacionadas con la configuración de la aplicación. En particular, parámetros como la memoria global, la memoria compartida, el tamaño de los warps y la cantidad de multiprocesadores tienen una influencia directa sobre el rendimiento obtenido durante la ejecución de los kernels. Por esta razón, la consulta de las propiedades del dispositivo suele formar parte de las etapas iniciales de desarrollo y evaluación de aplicaciones de cómputo paralelo basadas en CUDA \cite{deviceProperties,nvidiaDeviceBlog}.
