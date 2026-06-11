@@ -10,7 +10,6 @@
 \section{Conclusión de Bustillos Cruz Jonatan}
 % Escribir conclusion individual.
 
-
 \newpage
 \section{Conclusión de Delgado Lucero Cristian Isaac}
 % Escribir conclusión individual.
@@ -18,6 +17,16 @@
 \newpage
 \section{Conclusión de Frem Cortés José Angel}
 % Escribir conclusion individual.
+
+La realización de esta práctica permitió comprender de manera más clara las diferencias existentes entre la programación secuencial tradicional y la programación paralela utilizando CUDA. Aunque previamente ya se habían estudiado conceptos relacionados con el cómputo paralelo, el desarrollo de una aplicación real para la multiplicación de matrices permitió observar cómo estos conceptos se implementan en la práctica. Durante la elaboración del programa fue posible identificar la importancia de distribuir adecuadamente el trabajo entre múltiples hilos para aprovechar los recursos de procesamiento de la GPU. Esto ayudó a entender que el rendimiento de una aplicación paralela no depende únicamente del algoritmo utilizado, sino también de la forma en que se organizan y coordinan los elementos de ejecución dentro de la arquitectura CUDA.
+
+Asimismo, la práctica permitió familiarizarse con el modelo de programación heterogéneo empleado por CUDA, en el cual la CPU y la GPU trabajan de manera conjunta para resolver un problema. Uno de los aspectos más interesantes fue comprender el flujo completo de ejecución de una aplicación CUDA, desde la reserva de memoria y transferencia de datos entre el host y el dispositivo, hasta el lanzamiento del kernel y la recuperación de los resultados obtenidos. Este proceso permitió apreciar que el desarrollo de aplicaciones paralelas requiere una planeación más cuidadosa que la programación convencional, ya que es necesario administrar recursos adicionales y considerar aspectos relacionados con la comunicación entre ambos entornos de ejecución.
+
+Otro aprendizaje importante fue la comprensión de la organización jerárquica de hilos, bloques y grillas. Antes de realizar esta práctica, estos conceptos podían parecer únicamente elementos teóricos; sin embargo, al utilizarlos directamente en la implementación de la multiplicación de matrices fue posible observar cómo cada hilo puede encargarse de una parte específica del problema. Esto facilitó entender la manera en que CUDA logra ejecutar miles de operaciones simultáneamente y por qué las GPU son especialmente eficientes para tareas que involucran grandes cantidades de cálculos repetitivos sobre conjuntos extensos de datos.
+
+Además, la práctica permitió reforzar conocimientos relacionados con la compilación y ejecución de programas CUDA mediante el compilador NVCC. Durante el proceso se observó que el desarrollo para GPU incorpora herramientas y procedimientos diferentes a los utilizados en programas convencionales de lenguaje C. Comprender el papel de NVCC y la manera en que separa el código destinado al host y al dispositivo ayudó a tener una mejor perspectiva del funcionamiento interno de las aplicaciones CUDA y de la complejidad que existe detrás de la ejecución paralela sobre hardware especializado.
+
+Finalmente, considero que esta práctica cumplió satisfactoriamente con su objetivo, ya que no solo permitió implementar una aplicación funcional para la multiplicación de matrices utilizando CUDA, sino que también ayudó a desarrollar una visión más amplia sobre las posibilidades del cómputo paralelo en problemas de mayor complejidad. El estudio de esta tecnología resulta especialmente relevante debido a su aplicación en áreas actuales como la inteligencia artificial, el procesamiento masivo de datos y la computación de alto rendimiento. Como resultado de esta actividad, se obtuvo una mejor comprensión tanto de los fundamentos teóricos como de los aspectos prácticos involucrados en el desarrollo de aplicaciones paralelas, constituyendo una base importante para futuros proyectos que requieran aprovechar el poder de procesamiento de las GPU.
 
 \newpage
 \section{Conclusión de Luna Gonzalez Gabriel Alexis}
