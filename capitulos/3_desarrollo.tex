@@ -6,7 +6,9 @@
 
 \chapter{Resultados y pruebas}
 
-En este capítulo se expone de manera detallada el desarrollo del sistema de multiplicación de matrices cuadradas implementado tanto en una arquitectura de unidad central de procesamiento como en una unidad de procesamiento gráfico. El objetivo principal consiste en contrastar el rendimiento, la eficiencia y los tiempos de ejecución obtenidos al realizar una operación matemática intensiva en ambos entornos de cómputo.
+En este capítulo se expone de manera detallada el desarrollo del sistema de multiplicación de matrices cuadradas implementado tanto sobre una arquitectura basada en unidad central de procesamiento como sobre una plataforma de procesamiento acelerado mediante unidad gráfica. La finalidad principal de esta etapa consiste en documentar de forma sistemática las decisiones de diseño adoptadas durante la construcción de la solución, así como las estrategias empleadas para garantizar la equivalencia funcional entre las versiones secuencial y paralela del algoritmo. Debido a que ambas implementaciones ejecutan el mismo procedimiento matemático sobre conjuntos de datos idénticos, resulta posible efectuar una comparación objetiva de los tiempos de ejecución y del comportamiento computacional observado en cada arquitectura.
+
+Además de describir el funcionamiento interno de los programas desarrollados, este capítulo presenta evidencia experimental obtenida durante la ejecución práctica del sistema. Las capturas de pantalla, registros temporales y resultados producidos por ambos programas permiten validar la correcta sincronización de procesos, la integridad de los datos intercambiados y la exactitud de los resultados generados. A partir de estos elementos se realiza posteriormente un análisis comparativo orientado a identificar las ventajas, limitaciones y consideraciones de rendimiento asociadas al uso de CUDA como tecnología de cómputo paralelo frente a una implementación tradicional ejecutada exclusivamente en CPU.
 
 \section{Desarrollo del Sistema}
 
@@ -22,11 +24,14 @@ Una vez establecidos los datos base idénticos, ambos programas ejecutan sus res
 
 \section{Diseño y Código Fuente}
 
-En esta sección se analiza a nivel de diseño el código de bajo nivel que da soporte a las operaciones lógicas, matemáticas y de sincronización de la práctica de laboratorio. El análisis abarca las herramientas de automatización de compilación y la implementación algorítmica de los programas concurrentes.
+La implementación de la práctica requirió la integración de diversos componentes de software encargados de coordinar la generación de datos, la sincronización entre procesos independientes y la ejecución de algoritmos de multiplicación matricial sobre arquitecturas heterogéneas. Desde una perspectiva de ingeniería de software, el diseño adoptado buscó mantener una clara separación entre las responsabilidades de cada programa, permitiendo que la versión secuencial y la versión paralela operaran de manera autónoma mientras compartían una fuente común de información. Esta estrategia facilitó la validación experimental al eliminar discrepancias derivadas de la utilización de conjuntos de datos distintos durante las pruebas.
+
+El análisis del código fuente resulta especialmente relevante debido a que permite comprender cómo los conceptos teóricos de concurrencia, sincronización y paralelismo son trasladados a una implementación práctica. A través del estudio de las rutinas de compilación, los mecanismos de comunicación mediante archivos compartidos y la organización interna de los algoritmos desarrollados, es posible identificar las diferencias fundamentales existentes entre un modelo de ejecución secuencial convencional y un modelo de procesamiento masivamente paralelo basado en miles de hilos de ejecución concurrentes dentro de una GPU moderna.
 
 \subsection{Automatización del Proyecto mediante Makefile}
 
-La compilación y la posterior ejecución sincronizada del sistema se automatizan por medio de una herramienta de desarrollo basada en scripts de comandos. En la figura~\ref{fig:makefile} se presenta la configuración y las directivas programadas en el script de automatización del Makefile de la práctica.
+La administración eficiente de proyectos que involucran múltiples lenguajes de programación y diferentes herramientas de compilación requiere mecanismos que permitan reproducir de manera consistente el proceso de construcción y ejecución del software. En este contexto, la utilización de un Makefile constituye una solución ampliamente adoptada dentro de entornos GNU/Linux, ya que permite definir dependencias, reglas de compilación y secuencias de comandos que pueden ejecutarse de forma automática. Esta capacidad resulta particularmente útil en proyectos de cómputo paralelo, donde frecuentemente deben coordinarse programas independientes, bibliotecas especializadas y configuraciones específicas de hardware acelerado.
+Dentro de la práctica desarrollada, el Makefile no solamente cumple la función tradicional de compilar los programas fuente, sino que además actúa como un mecanismo de orquestación encargado de coordinar la ejecución concurrente de ambos procesos. En la figura~\ref{fig:makefile} se presenta la configuración y las directivas programadas en el script de automatización del Makefile de la práctica. Gracias a esta automatización, se garantiza que las pruebas experimentales puedan repetirse bajo condiciones equivalentes, reduciendo errores humanos asociados a la ejecución manual de comandos y facilitando la validación de resultados. Asimismo, el uso de reglas parametrizadas permite mantener una estructura de trabajo más escalable y cercana a los procedimientos empleados en entornos profesionales de desarrollo científico y de alto rendimiento. 
 
 \begin{figure}[H]
     \centering
@@ -39,7 +44,10 @@ El script de automatización define variables globales para los compiladores, ut
 
 \subsection{Algoritmo y Código en Lenguaje C Serial}
 
-El algoritmo secuencial de multiplicación matricial está contenido en el archivo de código fuente MultiplicacionMatrices.c, el cual define las librerías del sistema, funciones auxiliares de depuración temporal e impresión formateada de matrices. En la figura~\ref{fig:codigo_c_1} se muestra la primera sección del archivo fuente en C, correspondiente a la cabecera y a la declaración de funciones auxiliares.
+La implementación secuencial de la multiplicación matricial se desarrolló en lenguaje C estándar con el objetivo de establecer una referencia de rendimiento frente a la versión paralela implementada mediante CUDA. Este programa se encuentra contenido en el archivo fuente \texttt{MultiplicacionMatrices.c}, el cual concentra la lógica necesaria para la sincronización mediante archivos compartidos, la carga de datos en memoria principal, la ejecución del algoritmo de multiplicación y la medición precisa de los tiempos de procesamiento. Debido a que todas las operaciones son ejecutadas por la CPU utilizando un único flujo principal de ejecución, esta versión permite observar el comportamiento tradicional de un algoritmo de complejidad cúbica sin la intervención de mecanismos de paralelización.
+
+Desde una perspectiva de ingeniería de software, el código se encuentra organizado en módulos funcionales que facilitan la lectura, depuración y validación de los resultados obtenidos. Además de las bibliotecas estándar requeridas para operaciones de entrada y salida, el programa incorpora funciones auxiliares destinadas al monitoreo temporal de la ejecución y a la presentación estructurada de las matrices en consola. Esta organización permite aislar responsabilidades específicas dentro del programa y simplifica el seguimiento del flujo de datos desde la lectura inicial hasta la obtención de la matriz resultante. En la figura~\ref{fig:codigo_c_1} se muestra la primera sección del archivo fuente en C, correspondiente a la cabecera del programa, las bibliotecas utilizadas y la declaración de las funciones auxiliares que sirven de soporte para las etapas posteriores de procesamiento.
+
 
 \begin{figure}[H]
     \centering
@@ -48,9 +56,7 @@ El algoritmo secuencial de multiplicación matricial está contenido en el archi
     \label{fig:codigo_c_1}
 \end{figure}
 
-En la primera sección del código serial C se definen las bibliotecas necesarias para la entrada y salida de texto, gestión de memoria dinámica, control de suspensiones temporales de hilos y medición de intervalos de tiempo con precisión de microsegundos mediante gettimeofday. Se configuran las constantes de compilación Filas y Columnas con un tamaño estático de diez elementos, garantizando la consistencia de las dimensiones en toda la ejecución. Asimismo, se implementa la función de impresión de información temporal print\_time\_info, la cual extrae la hora local del sistema con precisión de milisegundos y despliega un mensaje personalizado en la salida estándar de depuración.
-
-En la figura~\ref{fig:codigo_c_2} se observa la función auxiliar para imprimir el contenido de una matriz de tamaño fijo en un formato tabular limpio y delimitado.
+En la primera sección del código serial C se definen las bibliotecas necesarias para la entrada y salida de texto, gestión de memoria dinámica, control de suspensiones temporales de hilos y medición de intervalos de tiempo con precisión de microsegundos mediante gettimeofday. Se configuran las constantes de compilación Filas y Columnas con un tamaño estático de diez elementos, garantizando la consistencia de las dimensiones en toda la ejecución. Asimismo, se implementa la función de impresión de información temporal print\_time\_info, la cual extrae la hora local del sistema con precisión de milisegundos y despliega un mensaje personalizado en la salida estándar de depuración. En la figura~\ref{fig:codigo_c_2} se observa la función auxiliar para imprimir el contenido de una matriz de tamaño fijo en un formato tabular limpio y delimitado.
 
 \begin{figure}[H]
     \centering
@@ -59,9 +65,7 @@ En la figura~\ref{fig:codigo_c_2} se observa la función auxiliar para imprimir 
     \label{fig:codigo_c_2}
 \end{figure}
 
-Esta función auxiliar recorre de forma bidimensional los elementos enteros de la matriz e imprime por medio de caracteres ASCII una cuadrícula estructurada de diez celdas por fila. La alineación y el espaciado de los números enteros dentro de cada celda se configuran para facilitar la inspección visual inmediata de los valores numéricos resultantes.
-
-En la figura~\ref{fig:codigo_c_3} se presenta el punto de entrada de la función principal main y el ciclo activo de sincronización del archivo compartido.
+Esta función auxiliar recorre de forma bidimensional los elementos enteros de la matriz e imprime por medio de caracteres ASCII una cuadrícula estructurada de diez celdas por fila. La alineación y el espaciado de los números enteros dentro de cada celda se configuran para facilitar la inspección visual inmediata de los valores numéricos resultantes. En la figura~\ref{fig:codigo_c_3} se presenta el punto de entrada de la función principal main y el ciclo activo de sincronización del archivo compartido.
 
 \begin{figure}[H]
     \centering
@@ -70,9 +74,7 @@ En la figura~\ref{fig:codigo_c_3} se presenta el punto de entrada de la función
     \label{fig:codigo_c_3}
 \end{figure}
 
-El flujo del programa principal inicializa el registro temporal start\_total para documentar el tiempo global transcurrido de principio a fin. Posteriormente, el programa entra en un ciclo iterativo iterativo que intenta de manera reiterada abrir el archivo compartido de datos en modo lectura. Si el archivo no existe, la función suspende momentáneamente el hilo de ejecución del proceso durante un milisegundo mediante usleep con el objetivo de evitar el consumo innecesario del procesador de la CPU.
-
-En la figura~\ref{fig:codigo_c_4} se muestra el fragmento del código dedicado a la lectura y copia de los datos numéricos de entrada.
+El flujo del programa principal inicializa el registro temporal start\_total para documentar el tiempo global transcurrido de principio a fin. Posteriormente, el programa entra en un ciclo iterativo iterativo que intenta de manera reiterada abrir el archivo compartido de datos en modo lectura. Si el archivo no existe, la función suspende momentáneamente el hilo de ejecución del proceso durante un milisegundo mediante usleep con el objetivo de evitar el consumo innecesario del procesador de la CPU. En la figura~\ref{fig:codigo_c_4} se muestra el fragmento del código dedicado a la lectura y copia de los datos numéricos de entrada.
 
 \begin{figure}[H]
     \centering
@@ -81,9 +83,7 @@ En la figura~\ref{fig:codigo_c_4} se muestra el fragmento del código dedicado a
     \label{fig:codigo_c_4}
 \end{figure}
 
-Una vez superado el bucle de sincronización, la función fscanf lee uno a uno los números enteros formateados del archivo y los almacena consecutivamente en las matrices bidimensionales estáticas A y B de memoria del host. En caso de presentarse alguna anomalía física o error de formato durante la lectura de los datos, el programa interrumpe inmediatamente su ejecución y retorna un código de error de ejecución al sistema operativo.
-
-En la figura~\ref{fig:codigo_c_5} se exhibe el bloque lógico que destruye el archivo temporal compartido para dejar limpio el almacenamiento de disco, presenta las matrices leídas al usuario e implementa el cálculo de la multiplicación matricial.
+Una vez superado el bucle de sincronización, la función fscanf lee uno a uno los números enteros formateados del archivo y los almacena consecutivamente en las matrices bidimensionales estáticas A y B de memoria del host. En caso de presentarse alguna anomalía física o error de formato durante la lectura de los datos, el programa interrumpe inmediatamente su ejecución y retorna un código de error de ejecución al sistema operativo. En la figura~\ref{fig:codigo_c_5} se exhibe el bloque lógico que destruye el archivo temporal compartido para dejar limpio el almacenamiento de disco, presenta las matrices leídas al usuario e implementa el cálculo de la multiplicación matricial.
 
 \begin{figure}[H]
     \centering
@@ -92,9 +92,7 @@ En la figura~\ref{fig:codigo_c_5} se exhibe el bloque lógico que destruye el ar
     \label{fig:codigo_c_5}
 \end{figure}
 
-La remoción física del archivo compartido se realiza de forma inmediata con el comando remove para evitar dejar archivos residuales en el directorio local del espacio de trabajo. Seguidamente, se invocan las funciones auxiliares de impresión formateada para desplegar el contenido de las matrices de entrada A y B. El cálculo de la multiplicación se ejecuta de manera secuencial en la CPU a través de tres bucles iterativos anidados tradicionales. Las iteraciones acumulan de forma progresiva en la matriz resultante C la suma del producto aritmético de las filas de la matriz A por las columnas de la matriz B.
-
-En la figura~\ref{fig:codigo_c_6} se expone el bloque final del código secuencial que concluye las mediciones de tiempo y muestra el resultado de la operación.
+La remoción física del archivo compartido se realiza de forma inmediata con el comando remove para evitar dejar archivos residuales en el directorio local del espacio de trabajo. Seguidamente, se invocan las funciones auxiliares de impresión formateada para desplegar el contenido de las matrices de entrada A y B. El cálculo de la multiplicación se ejecuta de manera secuencial en la CPU a través de tres bucles iterativos anidados tradicionales. Las iteraciones acumulan de forma progresiva en la matriz resultante C la suma del producto aritmético de las filas de la matriz A por las columnas de la matriz B. En la figura~\ref{fig:codigo_c_6} se expone el bloque final del código secuencial que concluye las mediciones de tiempo y muestra el resultado de la operación.
 
 \begin{figure}[H]
     \centering
@@ -107,6 +105,9 @@ Tras concluir la computación aritmética de los elementos de la matriz, el prog
 
 \subsection{Algoritmo y Código en Lenguaje CUDA Paralelo}
 
+La implementación paralela desarrollada mediante CUDA representa el componente central de la práctica, debido a que permite explotar las capacidades de procesamiento masivo presentes en las unidades gráficas modernas. A diferencia de los algoritmos secuenciales tradicionales, donde un único flujo de ejecución realiza todas las operaciones de forma ordenada, el modelo de programación CUDA distribuye el trabajo entre numerosos hilos que operan simultáneamente sobre distintos fragmentos de los datos. Esta filosofía de ejecución posibilita reducir significativamente los tiempos de procesamiento cuando el problema presenta suficiente paralelismo inherente para ser explotado por el hardware.
+
+
 El código paralelo en la GPU está contenido en el archivo MultiplicacionMatricesCUDA.cu y utiliza extensiones específicas de la API runtime de CUDA \cite{nvidiaToolkit}. En la figura~\ref{fig:codigo_cuda_1} se ilustra la primera parte del archivo, con las directivas de inclusión, constantes y cabeceras de funciones auxiliares en CUDA.
 
 \begin{figure}[H]
@@ -116,9 +117,7 @@ El código paralelo en la GPU está contenido en el archivo MultiplicacionMatric
     \label{fig:codigo_cuda_1}
 \end{figure}
 
-Las librerías importadas incluyen cuda\_runtime.h y device\_launch\_parameters.h, las cuales proveen las funciones de asignación de memoria física en el coprocesador GPU, transferencia de datos del host al dispositivo e inicialización del kernel. La macro global N se define con el tamaño de diez para coincidir exactamente con las dimensiones geométricas del problema serial CPU.
-
-En la figura~\ref{fig:codigo_cuda_2} se observa la función auxiliar de impresión de matrices de entrada adaptada al programa de CUDA.
+Las librerías importadas incluyen cuda\_runtime.h y device\_launch\_parameters.h, las cuales proveen las funciones de asignación de memoria física en el coprocesador GPU, transferencia de datos del host al dispositivo e inicialización del kernel. La macro global N se define con el tamaño de diez para coincidir exactamente con las dimensiones geométricas del problema serial CPU. En la figura~\ref{fig:codigo_cuda_2} se observa la función auxiliar de impresión de matrices de entrada adaptada al programa de CUDA.
 
 \begin{figure}[H]
     \centering
@@ -127,9 +126,7 @@ En la figura~\ref{fig:codigo_cuda_2} se observa la función auxiliar de impresi�
     \label{fig:codigo_cuda_2}
 \end{figure}
 
-Esta función comparte la estructura y formato de la función descrita previamente en el programa de CPU. Su rol es asegurar que la inspección visual en consola de las matrices generadas por CUDA coincida geométricamente con la salida del programa secuencial.
-
-En la figura~\ref{fig:codigo_cuda_3} se presenta el código del kernel de GPU MultiplicarMatricesGPU que computa la multiplicación de forma paralela.
+Esta función comparte la estructura y formato de la función descrita previamente en el programa de CPU. Su rol es asegurar que la inspección visual en consola de las matrices generadas por CUDA coincida geométricamente con la salida del programa secuencial. En la figura~\ref{fig:codigo_cuda_3} se presenta el código del kernel de GPU MultiplicarMatricesGPU que computa la multiplicación de forma paralela.
 
 \begin{figure}[H]
     \centering
@@ -138,9 +135,7 @@ En la figura~\ref{fig:codigo_cuda_3} se presenta el código del kernel de GPU Mu
     \label{fig:codigo_cuda_3}
 \end{figure}
 
-El kernel de ejecución paralela se denota con el calificador de tipo global de CUDA, lo que indica que se invoca desde el host (CPU) y se ejecuta de forma física en el dispositivo (GPU) \cite{hostdevice}. Cada hilo del kernel calcula de manera independiente su identificador de fila y columna global utilizando variables internas del hardware tales como blockIdx, blockDim y threadIdx \cite{threadIndexing}. Se realiza un chequeo de límites para evitar accesos de memoria fuera de rango en matrices de dimensiones no múltiplos directos del tamaño del bloque. Cada hilo procesa en paralelo un único elemento de la matriz resultante C acumulando el producto de la fila correspondiente de la matriz A y la columna correspondiente de la matriz B. Para fines de verificación del paralelismo, el hilo inicial de cada bloque imprime información detallada sobre la ejecución paralela en el dispositivo.
-
-En la figura~\ref{fig:codigo_cuda_4} se muestra el inicio del programa principal en CUDA, la pre-inicialización del hardware y la generación de números aleatorios.
+El kernel de ejecución paralela se denota con el calificador de tipo global de CUDA, lo que indica que se invoca desde el host (CPU) y se ejecuta de forma física en el dispositivo (GPU) \cite{hostdevice}. Cada hilo del kernel calcula de manera independiente su identificador de fila y columna global utilizando variables internas del hardware tales como blockIdx, blockDim y threadIdx \cite{threadIndexing}. Se realiza un chequeo de límites para evitar accesos de memoria fuera de rango en matrices de dimensiones no múltiplos directos del tamaño del bloque. Cada hilo procesa en paralelo un único elemento de la matriz resultante C acumulando el producto de la fila correspondiente de la matriz A y la columna correspondiente de la matriz B. Para fines de verificación del paralelismo, el hilo inicial de cada bloque imprime información detallada sobre la ejecución paralela en el dispositivo. En la figura~\ref{fig:codigo_cuda_4} se muestra el inicio del programa principal en CUDA, la pre-inicialización del hardware y la generación de números aleatorios.
 
 \begin{figure}[H]
     \centering
@@ -149,9 +144,7 @@ En la figura~\ref{fig:codigo_cuda_4} se muestra el inicio del programa principal
     \label{fig:codigo_cuda_4}
 \end{figure}
 
-La ejecución en CUDA inicia con la llamada de sistema cudaFree(0). Esta llamada preliminar inicializa de forma forzada el contexto interno del hardware gráfico en el sistema operativo host, mitigando el retardo inherente de arranque (overhead) del dispositivo durante la posterior etapa crítica de medición de tiempo del cálculo aritmético. Las matrices de entrada A y B se pueblan con números enteros aleatorios entre cero y nueve utilizando una semilla basada en el tiempo del sistema.
-
-En la figura~\ref{fig:codigo_cuda_5} se presenta el código que persiste las matrices en el archivo compartido e inicializa los punteros del dispositivo gráfico GPU.
+La ejecución en CUDA inicia con la llamada de sistema cudaFree(0). Esta llamada preliminar inicializa de forma forzada el contexto interno del hardware gráfico en el sistema operativo host, mitigando el retardo inherente de arranque (overhead) del dispositivo durante la posterior etapa crítica de medición de tiempo del cálculo aritmético. Las matrices de entrada A y B se pueblan con números enteros aleatorios entre cero y nueve utilizando una semilla basada en el tiempo del sistema. En la figura~\ref{fig:codigo_cuda_5} se presenta el código que persiste las matrices en el archivo compartido e inicializa los punteros del dispositivo gráfico GPU.
 
 \begin{figure}[H]
     \centering
@@ -160,9 +153,7 @@ En la figura~\ref{fig:codigo_cuda_5} se presenta el código que persiste las mat
     \label{fig:codigo_cuda_5}
 \end{figure}
 
-Las matrices aleatorias A y B se escriben en el archivo compartido utilizando la extensión temporal tmp para garantizar una escritura segura. La llamada rename renombra el archivo físico a txt de manera atómica en el sistema operativo, permitiendo que el proceso concurrente en C inicie la lectura sin el riesgo de inconsistencias de datos incompletos. Asimismo, se realiza la reservación de memoria lineal en el dispositivo gráfico a través de la API cudaMalloc para alojar las copias en GPU de las matrices A, B y C \cite{cornellMemory}.
-
-En la figura~\ref{fig:codigo_cuda_6} se detalla la copia de datos hacia el dispositivo, la configuración de ejecución en bloques bidimensionales y el lanzamiento de la multiplicación matricial.
+Las matrices aleatorias A y B se escriben en el archivo compartido utilizando la extensión temporal tmp para garantizar una escritura segura. La llamada rename renombra el archivo físico a txt de manera atómica en el sistema operativo, permitiendo que el proceso concurrente en C inicie la lectura sin el riesgo de inconsistencias de datos incompletos. Asimismo, se realiza la reservación de memoria lineal en el dispositivo gráfico a través de la API cudaMalloc para alojar las copias en GPU de las matrices A, B y C \cite{cornellMemory}. En la figura~\ref{fig:codigo_cuda_6} se detalla la copia de datos hacia el dispositivo, la configuración de ejecución en bloques bidimensionales y el lanzamiento de la multiplicación matricial.
 
 \begin{figure}[H]
     \centering
@@ -186,11 +177,13 @@ La matriz resultante C se transfiere de vuelta a la memoria del sistema principa
 
 \section{Evidencia de Ejecución}
 
-En esta sección se presentan las capturas de pantalla de la ejecución y los datos de salida desplegados en la consola del terminal para la validación empírica del correcto funcionamiento del sistema secuencial y paralelo concurrente.
+Una vez concluida la fase de implementación, se procedió a la ejecución controlada de ambos programas con el propósito de verificar su correcto funcionamiento y recopilar información experimental relevante para el análisis comparativo. La evidencia obtenida incluye capturas de pantalla, registros temporales y salidas de consola producidas durante las distintas etapas de procesamiento. Estos elementos permiten observar de forma directa el comportamiento interno de cada implementación y constituyen una fuente valiosa para validar la correcta sincronización entre procesos y la consistencia de los resultados calculados. 
+
+La documentación visual presentada en esta sección tiene además una función metodológica importante dentro del contexto de la práctica de laboratorio, ya que proporciona trazabilidad sobre las pruebas realizadas. Mediante la observación de los eventos registrados durante la ejecución es posible corroborar aspectos como la generación de datos, la transferencia de información entre procesos, la activación de los kernels paralelos y la obtención de las matrices resultantes. De esta manera, la evidencia experimental complementa el análisis teórico desarrollado en capítulos anteriores y respalda las conclusiones obtenidas a partir de los resultados observados.
 
 \subsection{Ejecución del Proceso en CPU Serial}
 
-El programa en C secuencial inicia su ejecución a la espera de la creación del archivo compartido en disco por parte del proceso en CUDA. En la figura~\ref{fig:salida_c_1} se observa el comportamiento del proceso de la CPU durante los pasos de espera activa y posterior detección de los datos.
+El programa en C secuencial inicia su ejecución a la espera de la creación del archivo compartido en disco por parte del proceso en CUDA. En la figura~\ref{fig:salida_c_1} se observa el comportamiento del proceso de la CPU durante los pasos de espera activa y posterior detección de los datos. El análisis de la salida generada por la CPU resulta particularmente importante porque permite verificar la correcta recepción de los datos compartidos, así como la exactitud de los resultados obtenidos antes de realizar cualquier comparación de rendimiento. La secuencia de mensajes mostrada durante la ejecución documenta cada etapa relevante del proceso, incluyendo la espera del archivo compartido, la lectura de las matrices de entrada, el cálculo de la matriz resultante y la medición temporal correspondiente. Estas observaciones constituyen la referencia utilizada posteriormente para validar el comportamiento funcional de la versión paralela.
 
 \begin{figure}[H]
     \centering
@@ -199,9 +192,7 @@ El programa en C secuencial inicia su ejecución a la espera de la creación del
     \label{fig:salida_c_1}
 \end{figure}
 
-El proceso de la CPU imprime en la salida estándar la hora precisa de arranque, quedando suspendido momentáneamente en el bucle activo de espera. Una vez que el archivo de matrices de entrada compartidas aparece en el directorio de trabajo, el proceso C lee los datos de las matrices, elimina el archivo compartido y reporta en pantalla la hora de inicio de las mediciones del cronómetro.
-
-En la figura~\ref{fig:salida_c_2} se observa la primera parte del vaciado de datos de consola del programa secuencial, mostrando la matriz A y el inicio de la matriz B copiadas desde el archivo compartido.
+El proceso de la CPU imprime en la salida estándar la hora precisa de arranque, quedando suspendido momentáneamente en el bucle activo de espera. Una vez que el archivo de matrices de entrada compartidas aparece en el directorio de trabajo, el proceso C lee los datos de las matrices, elimina el archivo compartido y reporta en pantalla la hora de inicio de las mediciones del cronómetro. En la figura~\ref{fig:salida_c_2} se observa la primera parte del vaciado de datos de consola del programa secuencial, mostrando la matriz A y el inicio de la matriz B copiadas desde el archivo compartido.
 
 \begin{figure}[H]
     \centering
@@ -210,9 +201,7 @@ En la figura~\ref{fig:salida_c_2} se observa la primera parte del vaciado de dat
     \label{fig:salida_c_2}
 \end{figure}
 
-Los datos se imprimen en la cuadrícula estructurada definida en la etapa de diseño de código. Esta representación permite realizar la verificación manual rápida de las celdas individuales leídas para asegurar la integridad de la transferencia de archivos.
-
-En la figura~\ref{fig:salida_c_3} se presenta el resto de la matriz de entrada B y el inicio del vaciado de la matriz resultante C que ha sido computada de forma serial por el algoritmo cúbico convencional.
+Los datos se imprimen en la cuadrícula estructurada definida en la etapa de diseño de código. Esta representación permite realizar la verificación manual rápida de las celdas individuales leídas para asegurar la integridad de la transferencia de archivos. En la figura~\ref{fig:salida_c_3} se presenta el resto de la matriz de entrada B y el inicio del vaciado de la matriz resultante C que ha sido computada de forma serial por el algoritmo cúbico convencional.
 
 \begin{figure}[H]
     \centering
@@ -221,9 +210,7 @@ En la figura~\ref{fig:salida_c_3} se presenta el resto de la matriz de entrada B
     \label{fig:salida_c_3}
 \end{figure}
 
-El programa procesa las operaciones aritméticas elementales de forma instantánea al tratarse de un volumen reducido de elementos matemáticos, iniciando de inmediato la impresión ordenada de los resultados.
-
-En la figura~\ref{fig:salida_c_4} se muestra la porción final de la ejecución serial en C, donde se despliega el desenlace de la matriz de resultados C y la medición final del cronómetro de ejecución secuencial.
+El programa procesa las operaciones aritméticas elementales de forma instantánea al tratarse de un volumen reducido de elementos matemáticos, iniciando de inmediato la impresión ordenada de los resultados. En la figura~\ref{fig:salida_c_4} se muestra la porción final de la ejecución serial en C, donde se despliega el desenlace de la matriz de resultados C y la medición final del cronómetro de ejecución secuencial.
 
 \begin{figure}[H]
     \centering
@@ -236,7 +223,7 @@ La finalización del programa serial reporta un tiempo total de ejecución que o
 
 \subsection{Ejecución del Proceso en GPU Paralelo con CUDA}
 
-El proceso de CUDA es el encargado de arrancar la ejecución global del sistema de la práctica de laboratorio al inicializar las variables y generar las matrices. En la figura~\ref{fig:salida_cuda_1} se ilustra el arranque de ejecución del programa de CUDA en el host y la generación aleatoria de matrices.
+El proceso de CUDA es el encargado de arrancar la ejecución global del sistema de la práctica de laboratorio al inicializar las variables y generar las matrices. En la figura~\ref{fig:salida_cuda_1} se ilustra el arranque de ejecución del programa de CUDA en el host y la generación aleatoria de matrices. La evidencia recopilada durante la ejecución permite visualizar la interacción entre la CPU y la GPU, así como el flujo completo seguido por los datos a lo largo del proceso de cómputo. Los mensajes generados por el programa documentan la creación de las matrices de entrada, las transferencias de memoria, la activación de los bloques de ejecución y la recuperación de los resultados calculados. Gracias a esta información es posible analizar con mayor precisión el impacto de las distintas fases del procesamiento paralelo y comprender cómo la arquitectura CUDA distribuye el trabajo entre múltiples hilos concurrentes.
 
 \begin{figure}[H]
     \centering
@@ -245,9 +232,7 @@ El proceso de CUDA es el encargado de arrancar la ejecución global del sistema 
     \label{fig:salida_cuda_1}
 \end{figure}
 
-El programa de CUDA notifica el inicio de la carga de recursos y de la asignación interna. Genera de forma aleatoria los coeficientes enteros de las matrices A y B, guardándolos inmediatamente en el archivo compartido antes de proceder con el vaciado en la terminal del host.
-
-En la figura~\ref{fig:salida_cuda_2} se presenta la sección media de la salida del terminal de CUDA, exponiendo el contenido de las matrices de entrada A y B impresas por el host.
+El programa de CUDA notifica el inicio de la carga de recursos y de la asignación interna. Genera de forma aleatoria los coeficientes enteros de las matrices A y B, guardándolos inmediatamente en el archivo compartido antes de proceder con el vaciado en la terminal del host. En la figura~\ref{fig:salida_cuda_2} se presenta la sección media de la salida del terminal de CUDA, exponiendo el contenido de las matrices de entrada A y B impresas por el host.
 
 \begin{figure}[H]
     \centering
@@ -256,9 +241,7 @@ En la figura~\ref{fig:salida_cuda_2} se presenta la sección media de la salida 
     \label{fig:salida_cuda_2}
 \end{figure}
 
-Al finalizar la impresión local, el programa del host notifica mediante avisos informativos el instante exacto en el que se envían las copias de los datos de entrada a la memoria física global interna de la tarjeta gráfica aceleradora.
-
-En la figura~\ref{fig:salida_cuda_3} se observa la invocación paralela de la GPU, el despliegue informativo de los bloques de hilos de ejecución paralelos de CUDA y el inicio del resultado.
+Al finalizar la impresión local, el programa del host notifica mediante avisos informativos el instante exacto en el que se envían las copias de los datos de entrada a la memoria física global interna de la tarjeta gráfica aceleradora. En la figura~\ref{fig:salida_cuda_3} se observa la invocación paralela de la GPU, el despliegue informativo de los bloques de hilos de ejecución paralelos de CUDA y el inicio del resultado.
 
 \begin{figure}[H]
     \centering
@@ -267,9 +250,7 @@ En la figura~\ref{fig:salida_cuda_3} se observa la invocación paralela de la GP
     \label{fig:salida_cuda_3}
 \end{figure}
 
-Los mensajes desplegados con el prefijo GPU indican que los cuatro bloques de hilos parametrizados (bloques organizados en coordenadas bidimensionales de cero a uno) procesaron con éxito y de forma paralela concurrente sus respectivas celdas matriciales asignadas. La GPU notifica el término del kernel y la copia de retorno hacia el host del vector resultante C.
-
-En la figura~\ref{fig:salida_cuda_4} se presenta el bloque conclusivo de la terminal de ejecución paralela, donde se muestra el final de la matriz de resultados GPU C y los tiempos finales.
+Los mensajes desplegados con el prefijo GPU indican que los cuatro bloques de hilos parametrizados (bloques organizados en coordenadas bidimensionales de cero a uno) procesaron con éxito y de forma paralela concurrente sus respectivas celdas matriciales asignadas. La GPU notifica el término del kernel y la copia de retorno hacia el host del vector resultante C. En la figura~\ref{fig:salida_cuda_4} se presenta el bloque conclusivo de la terminal de ejecución paralela, donde se muestra el final de la matriz de resultados GPU C y los tiempos finales.
 
 \begin{figure}[H]
     \centering
@@ -282,6 +263,8 @@ El programa de CUDA concluye exitosamente reportando tanto el tiempo específico
 
 \subsection{Análisis Comparativo y Validación}
 
-La confrontación y validación aritmética de la matriz de resultados C del proceso secuencial (figura~\ref{fig:salida_c_4}) frente a la matriz de resultados C del proceso en paralelo (figura~\ref{fig:salida_cuda_4}) demuestra una total equivalencia en cada uno de sus elementos en la misma posición bidimensional de la cuadrícula. Esta concordancia numérica valida la correcta implementación del algoritmo paralelo de multiplicación en el dispositivo gráfico acelerado.
+Más allá de la simple observación de los tiempos de ejecución, el análisis considera aspectos relacionados con la correctitud de los resultados, la consistencia de los datos procesados y las características propias de cada arquitectura de hardware. La confrontación y validación aritmética de la matriz de resultados C del proceso secuencial (figura~\ref{fig:salida_c_4}) frente a la matriz de resultados C del proceso en paralelo (figura~\ref{fig:salida_cuda_4}) demuestra una total equivalencia en cada uno de sus elementos en la misma posición bidimensional de la cuadrícula. Esta concordancia numérica valida la correcta implementación del algoritmo paralelo de multiplicación en el dispositivo gráfico acelerado.
 
 En cuanto a las mediciones del factor temporal, se observa que la multiplicación de matrices en la GPU toma una fracción de tiempo extremadamente baja. Sin embargo, para dimensiones tan reducidas como diez por diez elementos, el coste temporal global del programa CUDA en el host (que incluye precalentamiento, carga de contextos, asignación de bloques y copias de memoria física por bus PCIe) supera al tiempo de ejecución total del algoritmo puramente secuencial en la CPU \cite{nvidiaBestPractices}. Este comportamiento es coherente con los fundamentos teóricos del paralelismo masivo de hardware, donde los beneficios del cómputo multihilo de la GPU se amortizan y resultan eficientes ante cargas de computación aritmética masiva con matrices de grandes dimensiones \cite{awsGPUCPU}.
+
+Asimismo, la interpretación de los resultados requiere considerar que el rendimiento de una GPU no depende únicamente de la velocidad de ejecución del kernel paralelo, sino también de los costes asociados a la administración de recursos y a las transferencias de memoria entre host y dispositivo. Este aspecto adquiere especial relevancia cuando se trabaja con matrices de tamaño reducido, donde el tiempo invertido en preparar el entorno de ejecución puede superar el beneficio obtenido mediante la paralelización. Por consiguiente, el análisis realizado busca contextualizar los resultados experimentales dentro de los principios teóricos del cómputo paralelo y explicar las tendencias observadas durante la ejecución práctica de la solución desarrollada.
